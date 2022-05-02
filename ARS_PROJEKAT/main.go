@@ -19,13 +19,6 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
-	server := Service{
-		data: map[string][]*Config{},
-	}
-	router.HandleFunc("/post/", server.addConfigHandler).Methods("POST")
-	router.HandleFunc("/postgroup/", server.addConfigGroupHandler).Methods("POST")
-	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
-
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
 	go func() {
