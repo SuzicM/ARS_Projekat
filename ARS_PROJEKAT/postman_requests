@@ -1,0 +1,21 @@
+add/create Config
+
+POST localhost:8000/post/
+
+{
+  "entries":  { "key1": "value1"}
+}
+
+-----------------------------
+
+add/create Config Group
+
+POST localhost:8000/postgroup/
+
+{
+ "group" : [ {"entries":  { "group": "part group"}},
+  {"entries":  { "grou1": "part group2"}},
+  {"entries":  { "group2": "part group3"}}]
+}
+
+------------------------------
