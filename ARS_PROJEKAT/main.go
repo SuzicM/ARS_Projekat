@@ -19,6 +19,12 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
+	server := Service{
+		data: map[string][]*Config{},
+	}
+
+	router.HandleFunc("/api/product/update", server.UpdateConfig).Methods("PUT")
+
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
 	go func() {
