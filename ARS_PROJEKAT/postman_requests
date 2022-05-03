@@ -19,3 +19,15 @@ POST localhost:8000/postgroup/
 }
 
 ------------------------------
+
+get all configs
+
+GET localhost::8000/posts/
+
+------------------------------
+
+delete config
+
+DELETE localhost:8000/post/{id}/
+
+--------------------------------
