@@ -23,7 +23,8 @@ func main() {
 		data: map[string][]*Config{},
 	}
 
-	router.HandleFunc("/api/product/update", server.UpdateConfig).Methods("PUT")
+	router.HandleFunc("/put/", server.UpdateConfig).Methods("PUT")
+	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}

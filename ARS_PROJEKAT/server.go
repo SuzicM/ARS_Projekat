@@ -34,3 +34,12 @@ func respondWithJSON(response http.ResponseWriter, statusCode int, data interfac
 func respondWithError(response http.ResponseWriter, statusCode int, msg string) {
 	respondWithJSON(response, statusCode, map[string]string{"error": msg})
 }
+
+func (ts *Service) getAllHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks := make(map[string][]*Config)
+	for s, v := range ts.data {
+		allTasks[s] = v
+	}
+
+	renderJSON(w, allTasks)
+}
