@@ -24,14 +24,14 @@ func (ts *Service) addConfigHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rt, err := decodeBody(req.Body)
+	rt, err := decodeBodyGroup(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	id := createId()
-	ts.data[id] = append(ts.data[id], rt)
+	ts.data[id] = rt
 
 	renderJSON(w, rt)
 }
@@ -55,13 +55,9 @@ func (ts *Service) addConfigGroupHandler(w http.ResponseWriter, req *http.Reques
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	
-	for _, v := range rt.Group {
-		id := createId()
-		ts.data[id] = append(ts.data[id], v)
-	}
-
+	id := createId()
+	ts.data[id] = rt
 
 	renderJSON(w, rt)
 }
