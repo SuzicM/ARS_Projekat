@@ -20,9 +20,22 @@ func (ts *Service) getAllHandler(w http.ResponseWriter, req *http.Request) {
 	renderJSON(w, allTasks)
 }
 
-func (ts *Service) delConfigHandler(w http.ResponseWriter, req *http.Request) {
+func (ts Service) deleteConfigHandler(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	if v, ok := ts.data[id]; ok {
+	v, ok := ts.data[id]
+	if ok && len(v) == 1 {
+		delete(ts.data, id)
+		renderJSON(w, v)
+	} else {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+}
+
+func (ts Service) deleteConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	v, ok := ts.data[id]
+	if ok && len(v) > 1 {
 		delete(ts.data, id)
 		renderJSON(w, v)
 	} else {

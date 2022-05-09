@@ -24,7 +24,8 @@ func main() {
 	}
 
 	router.HandleFunc("/post/{id}/", server.getAllHandler).Methods("GET")
-	router.HandleFunc("/post/{id}/", server.delConfigHandler).Methods("DELETE")
+	router.HandleFunc("/post/{id}/", server.deleteConfigHandler).Methods("DELETE")
+	router.HandleFunc("/postgroup/{id}/", server.deleteConfigGroupHandler).Methods("DELETE")
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
 	go func() {
