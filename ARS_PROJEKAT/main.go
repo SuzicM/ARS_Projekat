@@ -23,9 +23,9 @@ func main() {
 		data: map[string][]*Config{},
 	}
 
-	router.HandleFunc("/put/", server.UpdateConfig).Methods("PUT")
-	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
-	router.HandleFunc("/post/{id}", server.getAllHandler).Methods("GET")
+	router.HandleFunc("/postgroup/{id}/", server.getConfigGroupHandler).Methods("GET")
+	router.HandleFunc("/post/{id}/", server.getConfigHandler).Methods("GET")
+	router.HandleFunc("/postgroup/{id}/", server.UpdateConfigGroupHandler).Methods("PUT")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
