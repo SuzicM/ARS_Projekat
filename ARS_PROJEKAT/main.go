@@ -25,6 +25,7 @@ func main() {
 
 	router.HandleFunc("/put/", server.UpdateConfig).Methods("PUT")
 	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
+	router.HandleFunc("/post/{id}", server.getAllHandler).Methods("GET")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}

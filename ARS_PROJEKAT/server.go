@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	_ "encoding/json"
+	"errors"
 	"fmt"
 	_ "fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	_ "net/http"
 )
@@ -42,4 +44,14 @@ func (ts *Service) getAllHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	renderJSON(w, allTasks)
+}
+
+func (ts Service) getConfigHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	if v, ok := ts.data[id]; ok {
+		renderJSON(w, v)
+	} else {
+		err := errors.New("key not found")
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
 }
