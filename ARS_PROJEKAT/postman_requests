@@ -2,9 +2,13 @@ add/create Config
 
 POST localhost:8000/post/
 
-{
-  "entries":  { "key1": "value1"}
-}
+[
+    {
+        "entries": {
+            "test": "test"
+        }
+    }
+]
 
 -----------------------------
 
@@ -12,11 +16,9 @@ add/create Config Group
 
 POST localhost:8000/postgroup/
 
-{
- "group" : [ {"entries":  { "group": "part group"}},
+[ {"entries":  { "group": "part group"}},
   {"entries":  { "grou1": "part group2"}},
   {"entries":  { "group2": "part group3"}}]
-}
 
 ------------------------------
 
@@ -26,8 +28,44 @@ GET localhost::8000/posts/
 
 ------------------------------
 
+get one config
+
+GET localhost:8000/post/{id}/
+
+-------------------------------
+
+get one config GROUP
+
+GET localhost:8000/postgroup/{id}/
+
+-------------------------------
+
 delete config
 
 DELETE localhost:8000/post/{id}/
 
 --------------------------------
+
+delete one config
+
+DELETE localhost:8000/post/{id}/
+
+-------------------------------
+
+delete one config group
+
+DELETE localhost:8000/postgroup/{id}/
+
+-------------------------------
+
+update config group
+
+PUT localhost:8000/postgroup/{id}/
+
+[
+    {
+        "entries": {
+            "test": "test"
+        }
+    }
+]
