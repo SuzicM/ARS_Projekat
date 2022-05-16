@@ -8,7 +8,9 @@ import (
 )
 
 type ConfigGroup struct {
-	Group []*Config `json:"group"`
+	id      string
+	Version string   `json:"version"`
+	Group   []Config `json:"group"`
 }
 
 func decodeBodyGroup(r io.Reader) ([]*Config, error) {
@@ -16,6 +18,17 @@ func decodeBodyGroup(r io.Reader) ([]*Config, error) {
 	dec.DisallowUnknownFields()
 
 	var rt []*Config
+	if err := dec.Decode(&rt); err != nil {
+		return nil, err
+	}
+	return rt, nil
+}
+
+func decodeConfigGroup(r io.Reader) ([]*ConfigGroup, error) {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+
+	var rt []*ConfigGroup
 	if err := dec.Decode(&rt); err != nil {
 		return nil, err
 	}
