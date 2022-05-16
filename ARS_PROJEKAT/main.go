@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +20,7 @@ func main() {
 
 	server := Service{
 		data: map[string][]*Config{},
+		group: map[string][]*ConfigGroup{},
 	}
 	router.HandleFunc("/post/", server.addConfigHandler).Methods("POST")
 	router.HandleFunc("/postgroup/", server.addConfigGroupHandler).Methods("POST")
