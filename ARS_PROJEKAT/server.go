@@ -11,7 +11,8 @@ import (
 )
 
 type Service struct {
-	data map[string][]*Config
+	data  map[string][]*Config
+	group map[string][]*ConfigGroup
 }
 
 func (ts *Service) UpdateConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
@@ -36,29 +37,45 @@ func (ts *Service) UpdateConfigGroupHandler(w http.ResponseWriter, req *http.Req
 
 	v := mux.Vars(req)
 	id := v["id"]
-	ts.data[id] = append(ts.data[id], rt...)
+	version := v["version"]
+
+	for _, v := range ts.group[id] {
+		if v.Version == version {
+			for _, k := range rt {
+				v.Group = append(v.Group, *k)
+			}
+		}
+	}
 
 	renderJSON(w, rt)
 }
 
 func (ts Service) getConfigHandler(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
 	v, ok := ts.data[id]
-	if !ok || len(v) == 1 {
-		renderJSON(w, v)
-	} else {
-		err := errors.New("key not found")
-		http.Error(w, err.Error(), http.StatusNotFound)
+	for _, s := range v {
+		if (!ok || len(v) == 1) && s.Version == version {
+			renderJSON(w, v)
+		} else {
+			err := errors.New("key not found")
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 	}
 }
 
 func (ts Service) getConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+	version := mux.Vars(req)["version"]
 	id := mux.Vars(req)["id"]
-	v, ok := ts.data[id]
-	if !ok || len(v) > 1 {
-		renderJSON(w, v)
-	} else {
-		err := errors.New("key not found")
-		http.Error(w, err.Error(), http.StatusNotFound)
+	v, ok := ts.group[id]
+	for _, s := range v {
+		if !ok || len(s.Group) > 1 {
+			if version == s.Version {
+				renderJSON(w, v)
+			}
+		} else {
+			err := errors.New("key not found")
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 	}
 }
