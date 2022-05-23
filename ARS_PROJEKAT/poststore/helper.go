@@ -1,20 +1,30 @@
 package poststore
 
 import(
-	"github.com/google/uuid"
 	"fmt"
 )
 
 const (
-	posts = "posts/%s"
-	all   = "posts"
+	config = "post/%s/%s"
+	configgroup = "postgroup/%s/%s"
+	configId = "post/%s"
+	configgroupId = "postgroup/%s"
+	allGroups   = "postgroups"
+	allConfigs   = "posts"
 )
 
-func generateKey() (string, string) {
-	id := uuid.New().String()
-	return fmt.Sprintf(posts, id), id
+func generateKeyConfig(id string, version string) string {
+	return fmt.Sprintf(config, id, version)
 }
 
-func constructKey(id string) string {
-	return fmt.Sprintf(posts, id)
+func generateKeyGroup(id string, version string) string {
+	return fmt.Sprintf(configgroup, id, version)
+}
+
+func constructKeyConfig(id string) string {
+	return fmt.Sprintf(configId, id)
+}
+
+func constructKeyGroup(id string) string {
+	return fmt.Sprintf(configgroupId, id)
 }

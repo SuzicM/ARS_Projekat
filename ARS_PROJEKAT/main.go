@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 	"github.com/gorilla/mux"
+	ps "github.com/SuzicM/ARS_Projekat/ARS_PROJEKAT/poststore"
 )
 
 func main() {
@@ -18,10 +19,15 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
-	server := Service{
-		data: map[string][]*Config{},
-		group: map[string][]*ConfigGroup{},
+	store, err := ps.New()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	server := postStore{
+		store: store,
+	}
+	
 	router.HandleFunc("/post/", server.addConfigHandler).Methods("POST")
 	router.HandleFunc("/postgroup/", server.addConfigGroupHandler).Methods("POST")
 	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")

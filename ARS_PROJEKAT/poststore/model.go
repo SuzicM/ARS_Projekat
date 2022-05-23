@@ -8,7 +8,7 @@ type Config struct {
 
 
 type ConfigGroup struct {
-	id string 
+	Id string `json:"id"`
 	Version     string   `json:"version"`
 	Group []Config `json:"group"`
 }

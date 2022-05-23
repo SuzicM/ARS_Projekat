@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"errors"
 	"mime"
+	ps "github.com/SuzicM/ARS_Projekat/ARS_PROJEKAT/poststore"
 )
 
-type Service struct {
-	data map[string][]*Config 
-	group map[string][]*ConfigGroup
+type postStore struct {
+	store *ps.PostStore
 }
 
-func (ts *Service) addConfigHandler(w http.ResponseWriter, req *http.Request) {
+func (ts *postStore) addConfigHandler(w http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
@@ -31,13 +31,12 @@ func (ts *Service) addConfigHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id := createId()
-	ts.data[id] = rt
+	ts.store.AddConfig(rt)
 
 	renderJSON(w, rt)
 }
 
-func (ts *Service) addConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+func (ts *postStore) addConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
@@ -51,27 +50,27 @@ func (ts *Service) addConfigGroupHandler(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	//rt, err := decodeBodyGroup(req.Body)
 	rt, err := decodeConfigGroup(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	
-	id := createId()
-	ts.group[id] = rt
+	ts.store.AddConfigGroup(rt)
 
 	renderJSON(w, rt)
 }
 
-func (ts *Service) getAllHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks :=  make(map[string][]*Config)
-	allGroups := make(map[string][]*ConfigGroup)
-	for s, v := range ts.data {
-		allTasks[s]= v
+func (ts *postStore) getAllHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks, err1 :=  ts.store.GetAllConfigs()
+	allGroups, err2 := ts.store.GetAllGroups()
+	if err1 != nil {
+		http.Error(w, err1.Error(), http.StatusBadRequest)
+		return
 	}
-	for s, v := range ts.group {
-		allGroups[s]= v
+	if err2 != nil {
+		http.Error(w, err2.Error(), http.StatusBadRequest)
+		return
 	}
 
 	renderJSON(w, allTasks)
