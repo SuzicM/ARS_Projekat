@@ -8,12 +8,6 @@ import (
 )
 
 
-type ConfigGroup struct {
-	id string 
-	Version     string   `json:"version"`
-	Group []Config `json:"group"`
-}
-
 func decodeBodyGroup(r io.Reader) ([]*Config, error) {
 	dec := json.NewDecoder(r)
 	dec.DisallowUnknownFields()
