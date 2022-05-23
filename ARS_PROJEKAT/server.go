@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"errors"
 	"mime"
-	ps "github.com/SuzicM/ARS_Projekat/ARS_PROJEKAT/poststore"
+	ps "SuzicM/ARS_PROJEKAT/poststore"
+	"github.com/gorilla/mux"
 )
 
 type postStore struct {
@@ -31,9 +32,13 @@ func (ts *postStore) addConfigHandler(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	ts.store.AddConfig(rt)
+	config , err := ts.store.AddConfig(rt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	renderJSON(w, rt)
+	renderJSON(w, config)
 }
 
 func (ts *postStore) addConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
@@ -56,23 +61,108 @@ func (ts *postStore) addConfigGroupHandler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 	
-	ts.store.AddConfigGroup(rt)
-
-	renderJSON(w, rt)
-}
-
-func (ts *postStore) getAllHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks, err1 :=  ts.store.GetAllConfigs()
-	allGroups, err2 := ts.store.GetAllGroups()
-	if err1 != nil {
-		http.Error(w, err1.Error(), http.StatusBadRequest)
+	configgroup , err := ts.store.AddConfigGroup(rt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err2 != nil {
-		http.Error(w, err2.Error(), http.StatusBadRequest)
+
+	renderJSON(w, configgroup)
+}
+
+func (ts *postStore) getAllConfigsHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks, err :=  ts.store.GetAllConfigs()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	renderJSON(w, allTasks)
-	renderJSON(w, allGroups)
+}
+
+func (ts *postStore) getAllGroupsHandler(w http.ResponseWriter, req *http.Request) {
+	allTasks, err :=  ts.store.GetAllGroups()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	renderJSON(w, allTasks)
+}
+
+func (ts *postStore) deleteConfigHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	config, err := ts.store.DeleteConfig(id, version)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	renderJSON(w, config)
+}
+
+func (ts *postStore) deleteConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	group, err := ts.store.DeleteConfigGroup(id, version)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	renderJSON(w, group)
+}
+
+func (ts *postStore) getConfigHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	config, err := ts.store.GetConfig(id, version)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	renderJSON(w, config)
+}
+
+func (ts *postStore) getConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	group, err := ts.store.GetConfigGroup(id, version)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	renderJSON(w, group)
+}
+
+func (ts *postStore) UpdateConfigGroupHandler(w http.ResponseWriter, req *http.Request) {
+	contentType := req.Header.Get("Content-Type")
+	mediatype, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if mediatype != "application/json" {
+		err := errors.New("Expect application/json Content-Type")
+		http.Error(w, err.Error(), http.StatusUnsupportedMediaType)
+		return
+	}
+
+	rt, err := decodeBodyGroup(req.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	v := mux.Vars(req)
+	id := v["id"]
+	version := v["version"]
+
+	configgroup, err := ts.store.UpdateConfigGroup(id,version,rt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	renderJSON(w, configgroup)
 }

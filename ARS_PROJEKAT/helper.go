@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 	"github.com/google/uuid"
-	ps "github.com/SuzicM/ARS_Projekat/ARS_PROJEKAT/poststore"
+	ps "SuzicM/ARS_PROJEKAT/poststore"
 )
 
 

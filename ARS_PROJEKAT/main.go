@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 	"github.com/gorilla/mux"
-	ps "github.com/SuzicM/ARS_Projekat/ARS_PROJEKAT/poststore"
+	ps "SuzicM/ARS_PROJEKAT/poststore"
 )
 
 func main() {
@@ -27,10 +27,16 @@ func main() {
 	server := postStore{
 		store: store,
 	}
-	
+
 	router.HandleFunc("/post/", server.addConfigHandler).Methods("POST")
 	router.HandleFunc("/postgroup/", server.addConfigGroupHandler).Methods("POST")
-	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
+	router.HandleFunc("/posts/", server.getAllConfigsHandler).Methods("GET")
+	router.HandleFunc("/postgroups/", server.getAllGroupsHandler).Methods("GET")
+	router.HandleFunc("/post/{id}/{version}/", server.deleteConfigHandler).Methods("DELETE")
+	router.HandleFunc("/postgroup/{id}/{version}/", server.deleteConfigGroupHandler).Methods("DELETE")
+	router.HandleFunc("/postgroup/{id}/{version}/", server.getConfigGroupHandler).Methods("GET")
+	router.HandleFunc("/post/{id}/{version}/", server.getConfigHandler).Methods("GET")
+	router.HandleFunc("/postgroup/{id}/{version}/", server.UpdateConfigGroupHandler).Methods("PUT")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
