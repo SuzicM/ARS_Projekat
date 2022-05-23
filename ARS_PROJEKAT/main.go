@@ -37,6 +37,7 @@ func main() {
 	router.HandleFunc("/postgroup/{id}/{version}/", server.getConfigGroupHandler).Methods("GET")
 	router.HandleFunc("/post/{id}/{version}/", server.getConfigHandler).Methods("GET")
 	router.HandleFunc("/postgroup/{id}/{version}/", server.UpdateConfigGroupHandler).Methods("PUT")
+	router.HandleFunc("/postgroup/{id}/{version}/{labels}/", server.getConfigByLabels).Methods("GET")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}

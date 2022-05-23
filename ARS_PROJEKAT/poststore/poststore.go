@@ -1,10 +1,14 @@
 package poststore
 
 import (
-	"github.com/hashicorp/consul/api"
-	"os"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"reflect"
+	"strings"
+
+	"github.com/hashicorp/consul/api"
 )
 
 type PostStore struct {
@@ -29,7 +33,7 @@ func New() (*PostStore, error) {
 
 func (cs *PostStore) GetAllConfigs() ([]*Config, error) {
 	kv := cs.cli.KV()
-	data, _, err := kv.List(allConfigs, nil)
+	data, _, err := kv.List(all, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +53,12 @@ func (cs *PostStore) GetAllConfigs() ([]*Config, error) {
 
 func (cs *PostStore) GetAllGroups() ([]*ConfigGroup, error) {
 	kv := cs.cli.KV()
-	data, _, err := kv.List(allGroups, nil)
+
+	data, _, err := kv.List(allGroup, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	posts := []*ConfigGroup{}
 	for _, pair := range data {
 		group := &ConfigGroup{}
@@ -145,7 +150,7 @@ func (cs *PostStore) DeleteConfigGroup(id string, version string) (map[string]st
 	return map[string]string{"deleted": id}, nil
 }
 
-func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config ) (*ConfigGroup, error) {
+func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config) (*ConfigGroup, error) {
 	kv := cs.cli.KV()
 
 	sid := constructKeyGroup(id, version)
@@ -160,5 +165,48 @@ func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config
 	}
 
 	configgroup.Group = append(configgroup.Group, config)
+	//kv.Delete(constructKeyGroup(id, version), nil)
+	data, err := json.Marshal(configgroup)
+	p := &api.KVPair{Key: sid, Value: data}
+	_, err = kv.Put(p, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return configgroup, nil
+}
+
+func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labels string) (map[string]*Config, error) {
+	kv := cs.cli.KV()
+	listConfigs := make(map[string]*Config)
+
+	sid := constructKeyConfig(id, version)
+	pair, _, err := kv.Get(sid, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	listOfLabels := strings.Split(labels, ";")
+	kvLabels := make(map[string]string)
+	for _, label := range listOfLabels {
+		parts := strings.Split(label, ":")
+		kvLabels[parts[0]] = parts[1]
+		log.Default().Println(kvLabels)
+	}
+
+	configgroup := &ConfigGroup{}
+	err = json.Unmarshal(pair.Value, configgroup)
+	if err != nil {
+		return nil, err
+	}
+	log.Default().Println("prazno")
+
+	for i := 0; i < len(configgroup.Group); i++ {
+		if reflect.DeepEqual(configgroup.Group[i].Entries, kvLabels) {
+			listConfigs[sid] = configgroup.Group[i]
+			log.Default().Println(configgroup.Group[i].Entries)
+		}
+	}
+
+	return listConfigs, nil
 }

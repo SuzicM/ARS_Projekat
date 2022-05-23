@@ -6,12 +6,12 @@ import(
 )
 
 const (
-	config = "post/%s/%s"
-	configgroup = "postgroup/%s/%s"
-	configId = "post/%s"
-	configgroupId = "postgroup/%s"
-	allGroups   = "group"
-	allConfigs   = "config"
+	config = "config/%s/%s"
+	configgroup = "group/%s/%s"
+	configId = "config/%s"
+	configgroupId = "group/%s"
+	allGroup   = "group"
+	all   = "config"
 )
 
 func generateConfigKey(ver string) (string, string) {

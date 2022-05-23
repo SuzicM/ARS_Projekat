@@ -60,6 +60,12 @@ func (ts *postStore) addConfigGroupHandler(w http.ResponseWriter, req *http.Requ
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	for _, config := range rt.Group {
+		if config.Version != rt.Version{
+			config.Version=rt.Version
+		}
+	}
 	
 	configgroup , err := ts.store.AddConfigGroup(rt)
 	if err != nil {
@@ -165,4 +171,17 @@ func (ts *postStore) UpdateConfigGroupHandler(w http.ResponseWriter, req *http.R
 	}
 
 	renderJSON(w, configgroup)
+}
+
+func (cs *postStore) getConfigByLabels(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	version := mux.Vars(req)["version"]
+	labels := mux.Vars(req)["labels"]
+	group, err := cs.store.GetConfigFromGroupWithLabel(id, version, labels)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	renderJSON(w, group)
 }
