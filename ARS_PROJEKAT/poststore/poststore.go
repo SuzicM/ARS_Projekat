@@ -114,7 +114,7 @@ func (cs *PostStore) GetConfig(id string, version string) (*Config, error) {
 
 	sid := constructKeyConfig(id, version)
 	pair, _, err := kv.Get(sid, nil)
-	if err != nil {
+	if pair == nil {
 		return nil, errors.New("Could not find a config.")
 	}
 	config := &Config{}
@@ -130,7 +130,7 @@ func (cs *PostStore) GetConfigGroup(id string, version string) (*ConfigGroup, er
 
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
-	if err != nil {
+	if pair == nil {
 		return nil, errors.New("Could not find a group.")
 	}
 	configgroup := &ConfigGroup{}
@@ -143,19 +143,34 @@ func (cs *PostStore) GetConfigGroup(id string, version string) (*ConfigGroup, er
 
 func (cs *PostStore) DeleteConfig(id string, version string) (map[string]string, error) {
 	kv := cs.cli.KV()
-	_, err := kv.Delete(constructKeyConfig(id, version), nil)
-	if err != nil {
-		return nil, errors.New("Could not delete the config.")
+
+	sid := constructKeyConfig(id, version)
+	pair, _, _ := kv.Get(sid, nil)
+	if pair == nil {
+		return nil, errors.New("Could not find a group.")
 	}
+
+	
+	kv.Delete(sid, nil)
+	/*if err != nil {
+		return nil, errors.New("Could not delete the config.")
+	}*/
 	return map[string]string{"deleted": id}, nil
 }
 
 func (cs *PostStore) DeleteConfigGroup(id string, version string) (map[string]string, error) {
 	kv := cs.cli.KV()
-	_, err := kv.Delete(constructKeyGroup(id, version), nil)
-	if err != nil {
-		return nil, errors.New("Could not delete the group.")
+
+	sid := constructKeyConfig(id, version)
+	pair, _, _ := kv.Get(sid, nil)
+	if pair == nil {
+		return nil, errors.New("Could not find a group.")
 	}
+
+	kv.Delete(sid, nil)
+	/*if err != nil {
+		return nil, errors.New("Could not delete the group.")
+	}*/
 	return map[string]string{"deleted": id}, nil
 }
 
@@ -164,7 +179,7 @@ func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config
 
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
-	if err != nil {
+	if pair == nil {
 		return nil, errors.New("Could not find given group to update.")
 	}
 	configgroup := &ConfigGroup{}
@@ -200,7 +215,7 @@ func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labe
 
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
-	if err != nil {
+	if pair == nil {
 		return nil, errors.New("Could not find given group to find label values.")
 	}
 
