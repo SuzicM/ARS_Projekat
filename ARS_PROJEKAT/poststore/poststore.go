@@ -3,7 +3,7 @@ package poststore
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	//"log"
 	"os"
 	"reflect"
 	"strings"
@@ -180,7 +180,7 @@ func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labe
 	kv := cs.cli.KV()
 	listConfigs := make(map[string]*Config)
 
-	sid := constructKeyConfig(id, version)
+	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
 	if err != nil {
 		return nil, err
@@ -190,8 +190,9 @@ func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labe
 	kvLabels := make(map[string]string)
 	for _, label := range listOfLabels {
 		parts := strings.Split(label, ":")
+		if parts != nil {
 		kvLabels[parts[0]] = parts[1]
-		log.Default().Println(kvLabels)
+		}
 	}
 
 	configgroup := &ConfigGroup{}
@@ -199,12 +200,12 @@ func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labe
 	if err != nil {
 		return nil, err
 	}
-	log.Default().Println("prazno")
 
-	for i := 0; i < len(configgroup.Group); i++ {
-		if reflect.DeepEqual(configgroup.Group[i].Entries, kvLabels) {
-			listConfigs[sid] = configgroup.Group[i]
-			log.Default().Println(configgroup.Group[i].Entries)
+	for _, config := range configgroup.Group{
+		if len(config.Entries) == len(kvLabels){
+			if reflect.DeepEqual(config.Entries, kvLabels) {
+				listConfigs[config.Id] = config
+			}
 		}
 	}
 
