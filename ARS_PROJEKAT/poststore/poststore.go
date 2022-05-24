@@ -2,12 +2,11 @@ package poststore
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	//"log"
 	"os"
 	"reflect"
 	"strings"
-
 	"github.com/hashicorp/consul/api"
 )
 
@@ -35,7 +34,7 @@ func (cs *PostStore) GetAllConfigs() ([]*Config, error) {
 	kv := cs.cli.KV()
 	data, _, err := kv.List(all, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find a list of configs.")
 	}
 
 	posts := []*Config{}
@@ -56,7 +55,7 @@ func (cs *PostStore) GetAllGroups() ([]*ConfigGroup, error) {
 
 	data, _, err := kv.List(allGroup, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find a list of groups.")
 	}
 
 	posts := []*ConfigGroup{}
@@ -78,6 +77,11 @@ func (cs *PostStore) AddConfig(config *Config) (*Config, error) {
 
 	sid := constructKeyConfig(config.Id, config.Version)
 
+	pair, _, err := kv.Get(sid, nil)
+	if pair != nil {
+		return nil, errors.New("Config already exists. ")
+	}
+
 	p := &api.KVPair{Key: sid, Value: data}
 	_, err = kv.Put(p, nil)
 	if err != nil {
@@ -91,6 +95,11 @@ func (cs *PostStore) AddConfigGroup(group *ConfigGroup) (*ConfigGroup, error) {
 	data, err := json.Marshal(group)
 
 	sid := constructKeyGroup(group.Id, group.Version)
+
+	pairs , _, err := kv.Get(sid, nil)
+	if pairs != nil {
+		return nil, errors.New("ConfigGroup already exists. ")
+	}
 
 	p := &api.KVPair{Key: sid, Value: data}
 	_, err = kv.Put(p, nil)
@@ -106,7 +115,7 @@ func (cs *PostStore) GetConfig(id string, version string) (*Config, error) {
 	sid := constructKeyConfig(id, version)
 	pair, _, err := kv.Get(sid, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find a config.")
 	}
 	config := &Config{}
 	err = json.Unmarshal(pair.Value, config)
@@ -122,7 +131,7 @@ func (cs *PostStore) GetConfigGroup(id string, version string) (*ConfigGroup, er
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find a group.")
 	}
 	configgroup := &ConfigGroup{}
 	err = json.Unmarshal(pair.Value, configgroup)
@@ -136,7 +145,7 @@ func (cs *PostStore) DeleteConfig(id string, version string) (map[string]string,
 	kv := cs.cli.KV()
 	_, err := kv.Delete(constructKeyConfig(id, version), nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not delete the config.")
 	}
 	return map[string]string{"deleted": id}, nil
 }
@@ -145,7 +154,7 @@ func (cs *PostStore) DeleteConfigGroup(id string, version string) (map[string]st
 	kv := cs.cli.KV()
 	_, err := kv.Delete(constructKeyGroup(id, version), nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not delete the group.")
 	}
 	return map[string]string{"deleted": id}, nil
 }
@@ -156,7 +165,7 @@ func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find given group to update.")
 	}
 	configgroup := &ConfigGroup{}
 	err = json.Unmarshal(pair.Value, configgroup)
@@ -164,8 +173,17 @@ func (cs *PostStore) UpdateConfigGroup(id string, version string, config *Config
 		return nil, err
 	}
 
+	if config.Version != configgroup.Version {
+		return nil, errors.New("Version of a group that is being added to group must be the same as the group version.")
+	}
+
+	for _, testc := range configgroup.Group {
+		if testc.Id == config.Id {
+			return nil, errors.New("Cannot add new config because a config with that ID already exits in a group.")
+		}
+	}
+
 	configgroup.Group = append(configgroup.Group, config)
-	//kv.Delete(constructKeyGroup(id, version), nil)
 	data, err := json.Marshal(configgroup)
 	p := &api.KVPair{Key: sid, Value: data}
 	_, err = kv.Put(p, nil)
@@ -183,7 +201,7 @@ func (cs *PostStore) GetConfigFromGroupWithLabel(id string, version string, labe
 	sid := constructKeyGroup(id, version)
 	pair, _, err := kv.Get(sid, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Could not find given group to find label values.")
 	}
 
 	listOfLabels := strings.Split(labels, ";")
